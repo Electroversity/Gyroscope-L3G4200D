@@ -22,7 +22,7 @@ void loop() {
 
 int setupGyro50(int scale){
   // Listing of the 8 bit registers embedded in the device, and the related addresses
-  // For the following please refer from page 31 on knowing how to assign the value
+  // For the following please refer from page 29 on knowing how to assign the value
   
   writeRegister(L3G4200D_address, 0x20, 0b00001111); 
   writeRegister(L3G4200D_address, 0x21, 0b00000000); // must be set to 0 to ensure proper operation of device
@@ -45,7 +45,7 @@ void writeRegister(byte deviceAddress, byte address, byte val){
 }
 
 long gyroValues(int scale){
-  // Refer page 29
+  // Refer page 27
   byte xMSB = readRegister(L3G4200D_address, 0x29);
   byte xLSB = readRegister(L3G4200D_address, 0x28);
   Serial.print("xMSB = "); Serial.println(xMSB);
