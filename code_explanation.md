@@ -87,3 +87,71 @@ Function description in short
 - `beginTransmission()`: begins the I2C communication protocol with the given address
 - Subsequently, queue bytes for transmission with the `write()` function and transmit them by calling `endTransmission()`
 
+```c
+long gyroValues(int scale){
+  // Refer page 27
+  byte xMSB = readRegister(L3G4200D_address, 0x29);
+  byte xLSB = readRegister(L3G4200D_address, 0x28);
+  gyroX = ((xMSB << 8) | xLSB); // bitshift left and bitwise or
+  
+  byte yMSB = readRegister(L3G4200D_address, 0x2B);
+  byte yLSB = readRegister(L3G4200D_address, 0x2A);
+  gyroY = ((yMSB << 8) | yLSB);
+  
+  byte zMSB = readRegister(L3G4200D_address, 0x2D);
+  byte zLSB = readRegister(L3G4200D_address, 0x2C);
+  gyroZ = ((zMSB << 8) | zLSB);
+
+  processGyroData(scale);  
+
+  // Here the values in the denominator represent gyro sensitivity for L3GD20 
+  // Update the values for L3G4200D
+  float processGyroData(int dps){
+  if (dps==250){
+      rotX = gyroX / 262.144;
+      rotY = gyroY / 262.144;
+      rotZ = gyroZ / 262.144;
+  }
+  else if (dps==500){
+      rotX = gyroX / 131.072;
+      rotY = gyroY / 131.072;
+      rotZ = gyroZ / 131.072;
+  }else{
+      rotX = gyroX / 32.768;
+      rotY = gyroY / 32.768;
+      rotZ = gyroZ / 32.768;
+  }
+}
+}
+```
+Here, *MSB* refers to Most Significant Bit and *LSB* refers to Least Significant Bit
+- `xMSB << 8` performs a *bitshift left operation* 
+  - eg. 3 << 8 will result to 11000
+- `result | xLSB` performs a *bitwise or *operation*
+  - eg. 11000 | 10 will result to 1101
+
+`processGyroData()` is responsible to result in *scale of rotation along the 3 axis in degrees*
+
+```c
+int readRegister(byte deviceAddress, byte address){
+  int v;
+  Wire.beginTransmission(deviceAddress);
+  Wire.write(address);
+  Wire.endTransmission();
+
+  Wire.requestFrom(deviceAddress, 1);
+
+  while(!Wire.available()){
+    
+  }
+  v = Wire.read();
+  Serial.print("v = "); Serial.println(v);
+  return v;
+}
+```
+The function is used to read values from the registers. 
+
+- `Wire.requestFrom(address, quantity)`: used by the master to request bytes from a slave device
+  - *quantity*: the number of bytes to request
+- `Wire.available()`: returns the number of bytes available for reading
+- `Wire.read()`: reads a byte that was transmitted from a slave device to a master after a call to `requestFrom()` or was transmitted from a master to a slave
