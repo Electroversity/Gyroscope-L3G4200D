@@ -4,18 +4,18 @@
 long gyroX, gyroY, gyroZ;
 float rotX, rotY, rotZ;
 
-byte L3G4200D_address = 0b1101001; // currently using 105 but online stated 106 for l3gd20
+byte L3G4200D_address = 0b1101001; // 105
 
 void setup() {
   Serial.begin(9600);
   Wire.begin(); // for initialising I2C communication
-  setupGyro50(2000);  // Configure L3G4200D - 250, 500 or 2000 deg/sec
+  setupGyro50(250);  // Configure L3G4200D - 250, 500 or 2000 deg/sec
   Serial.println("Sensor Initiated");
   delay(1500);  // wait for the sensor to be ready
 }
 
 void loop() {
-  gyroValues(2000);
+  gyroValues(250);
   printData();
   delay(100);
 }
@@ -81,29 +81,49 @@ int readRegister(byte deviceAddress, byte address){
   return v;
 }
 
+// 8.5, 17.5 and 70 have been obtained from the datasheet
+
 float processGyroData(int dps){
   if (dps==250){
-      rotX = gyroX / 262.144;
-      rotY = gyroY / 262.144;
-      rotZ = gyroZ / 262.144;
+      rotX = gyroX*8.5 / 1000;
+      rotY = gyroY*8.5 / 1000;
+      rotZ = gyroZ*8.5 / 1000;
   }
   else if (dps==500){
-      rotX = gyroX / 131.072;
-      rotY = gyroY / 131.072;
-      rotZ = gyroZ / 131.072;
+      rotX = gyroX*17.5 / 1000;
+      rotY = gyroY*17.5 / 1000;
+      rotZ = gyroZ*17.5 / 1000;
   }else{
-      rotX = gyroX / 32.768;
-      rotY = gyroY / 32.768;
-      rotZ = gyroZ / 32.768;
-  }
+      rotX = gyroX*70 / 1000;
+      rotY = gyroY*70 / 1000;
+      rotZ = gyroZ*70 / 1000;
 }
 
 void printData(){
+  // below values have been specified to 0.6 because I found them to min and max values(the values fluctuated between this range) when sensor was left stationary
+  float low = -0.6;
+  float high = 0.6;
+
   Serial.print("Gyro (deg)");
   Serial.print(" X=");
-  Serial.print(rotX);
+
+  if((rotX>low)&&(rotX<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotX);
+  }
+
   Serial.print(" Y=");
-  Serial.print(rotY);
+  if((rotY>low)&&(rotY<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotY);
+  }
+
   Serial.print(" Z=");
-  Serial.println(rotZ);
+  if((rotZ>low)&&(rotZ<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotZ);
+  }
 }
