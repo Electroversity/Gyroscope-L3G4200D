@@ -23,7 +23,7 @@ The aim of the repository is to deep dive into
 
 - Refer [Working of the Code](/code_explanation.md)
 - Refer [Connection with Arduino Uno](/pin_engagement.md)
-- Refer the [L3G4200D Datasheet](/L3G4200D%20datasheet.pdf)
+- Refer the [L3G4200D Datasheet](https://github.com/Electroversity/Gyroscope-L3G4200D/blob/website_gyro/L3G4200D%20datasheet.pdf)
 
 ## References 💡
 1. Wire Library - [Docs.particle.io](https://docs.particle.io/reference/device-os/api/wire-i2c/wire-i2c/)
