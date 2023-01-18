@@ -81,7 +81,7 @@ int readRegister(byte deviceAddress, byte address){
   return v;
 }
 
-// 8.5, 17.5 and 70 have been obtained from the datasheet
+// 8.5, 17.5 and 70 have been obtained from the datasheet and divided by 1000 to convert it into degree per second.
 
 float processGyroData(int dps){
   if (dps==250){
