@@ -21,7 +21,7 @@ The aim of the repository is to deep dive into
 
 ## Important Directions 🧭
 
-- Refer [Working of the Code](/code_explanation.md)
+- Refer [Working of the Code](/code_explanation.md) 
 - Refer [Connection with Arduino Uno](/pin_engagement.md)
 - Refer the [L3G4200D Datasheet](https://github.com/Electroversity/Gyroscope-L3G4200D/blob/website_gyro/L3G4200D%20datasheet.pdf)
 
