@@ -12,7 +12,7 @@ nav_order: 3
 long gyroX, gyroY, gyroZ;
 float rotX, rotY, rotZ;
 
-byte L3GD20_address = 0b1101001; 
+byte L3G4200D_address = 0b1101001; 
 ```
 For the above code
 - We have included `Wire` library which allows Arduino Uno to communicate with the I2C/TWI devices. 
@@ -20,20 +20,20 @@ For the above code
     - `rotX`: rotation in x axis
     - `rotY`: rotation in y axis
     - `rotZ`: rotation in z axis
-- If we refer the datasheet [L3G4200D datasheet](/L3G4200D%20datasheet.pdf), we can see that the address associated with it is 110101xb but here in our case for some reason it doesn't work whereas it works with the address 110100xb (the address for L3G4200D). The SAO pin in our gyroscope allows us to choose the last bit of the address by setting it high or low. 
+- If we refer the datasheet [L3G4200D datasheet](https://github.com/Electroversity/Gyroscope-L3G4200D/blob/website_gyro/L3G4200D%20datasheet.pdf), we can see the address for the device is 105
     - Thus we have two possible addresses: 1101001 or 1101000.
 
 ```c
 void setup() {
   Serial.begin(9600);
   Wire.begin(); 
-  setupGyro50(2000);  
+  setupGyro50(250);  
   Serial.println("Sensor Initiated");
   delay(1500);  
 }
 
 void loop() {
-  gyroValues(2000);
+  gyroValues(250);
   printData();
   delay(100);
 }
@@ -50,16 +50,16 @@ int setupGyro50(int scale){
   // Listing of the 8 bit registers embedded in the device, and the related addresses
   // For the following please refer from page 29 on knowing how to assign the value
   
-  writeRegister(L3GD20_address, 0x20, 0b00001111); 
-  writeRegister(L3GD20_address, 0x21, 0b00000000); // must be set to 0 to ensure proper operation of device
+  writeRegister(L3G4200D_address, 0x20, 0b00001111); 
+  writeRegister(L3G4200D_address, 0x21, 0b00000000); // must be set to 0 to ensure proper operation of device
   if (scale==250){
-    writeRegister(L3GD20_address, 0x23, 0b00000000);
+    writeRegister(L3G4200D_address, 0x23, 0b00000000);
   }
   else if (scale==500){
-    writeRegister(L3GD20_address, 0x23, 0b00010000);
+    writeRegister(L3G4200D_address, 0x23, 0b00010000);
   }
   else{
-    writeRegister(L3GD20_address, 0x23, 0b00110000);
+    writeRegister(L3G4200D_address, 0x23, 0b00110000);
   }
 }
 ```
@@ -112,23 +112,23 @@ long gyroValues(int scale){
 
   processGyroData(scale);  
 
-  // Here the values in the denominator represent gyro sensitivity for L3GD20 
-  // Update the values for L3G4200D
-  float processGyroData(int dps){
+  
+// 8.5, 17.5 and 70 have been obtained from the datasheet
+
+float processGyroData(int dps){
   if (dps==250){
-      rotX = gyroX / 262.144;
-      rotY = gyroY / 262.144;
-      rotZ = gyroZ / 262.144;
+      rotX = gyroX*8.5 / 1000;
+      rotY = gyroY*8.5 / 1000;
+      rotZ = gyroZ*8.5 / 1000;
   }
   else if (dps==500){
-      rotX = gyroX / 131.072;
-      rotY = gyroY / 131.072;
-      rotZ = gyroZ / 131.072;
+      rotX = gyroX*17.5 / 1000;
+      rotY = gyroY*17.5 / 1000;
+      rotZ = gyroZ*17.5 / 1000;
   }else{
-      rotX = gyroX / 32.768;
-      rotY = gyroY / 32.768;
-      rotZ = gyroZ / 32.768;
-  }
+      rotX = gyroX*70 / 1000;
+      rotY = gyroY*70 / 1000;
+      rotZ = gyroZ*70 / 1000;
 }
 }
 ```
@@ -180,25 +180,25 @@ With great open source power comes great open source responsibility.
 long gyroX, gyroY, gyroZ;
 float rotX, rotY, rotZ;
 
-byte L3G4200D_address = 0b1101001; // currently using 105 but online stated 106 for l3gd20
+byte L3G4200D_address = 0b1101001; // 105
 
 void setup() {
   Serial.begin(9600);
   Wire.begin(); // for initialising I2C communication
-  setupGyro50(2000);  // Configure L3G4200D - 250, 500 or 2000 deg/sec
+  setupGyro50(250);  // Configure L3G4200D - 250, 500 or 2000 deg/sec
   Serial.println("Sensor Initiated");
   delay(1500);  // wait for the sensor to be ready
 }
 
 void loop() {
-  gyroValues(2000);
+  gyroValues(250);
   printData();
   delay(100);
 }
 
 int setupGyro50(int scale){
   // Listing of the 8 bit registers embedded in the device, and the related addresses
-  // For the following please refer from page 29 on knowing how to assign the value
+  // For the following please refer from page 31 on knowing how to assign the value
   
   writeRegister(L3G4200D_address, 0x20, 0b00001111); 
   writeRegister(L3G4200D_address, 0x21, 0b00000000); // must be set to 0 to ensure proper operation of device
@@ -221,7 +221,7 @@ void writeRegister(byte deviceAddress, byte address, byte val){
 }
 
 long gyroValues(int scale){
-  // Refer page 27
+  // Refer page 29
   byte xMSB = readRegister(L3G4200D_address, 0x29);
   byte xLSB = readRegister(L3G4200D_address, 0x28);
   Serial.print("xMSB = "); Serial.println(xMSB);
@@ -257,31 +257,52 @@ int readRegister(byte deviceAddress, byte address){
   return v;
 }
 
+// 8.5, 17.5 and 70 have been obtained from the datasheet
+
 float processGyroData(int dps){
   if (dps==250){
-      rotX = gyroX / 262.144;
-      rotY = gyroY / 262.144;
-      rotZ = gyroZ / 262.144;
+      rotX = gyroX*8.5 / 1000;
+      rotY = gyroY*8.5 / 1000;
+      rotZ = gyroZ*8.5 / 1000;
   }
   else if (dps==500){
-      rotX = gyroX / 131.072;
-      rotY = gyroY / 131.072;
-      rotZ = gyroZ / 131.072;
+      rotX = gyroX*17.5 / 1000;
+      rotY = gyroY*17.5 / 1000;
+      rotZ = gyroZ*17.5 / 1000;
   }else{
-      rotX = gyroX / 32.768;
-      rotY = gyroY / 32.768;
-      rotZ = gyroZ / 32.768;
-  }
+      rotX = gyroX*70 / 1000;
+      rotY = gyroY*70 / 1000;
+      rotZ = gyroZ*70 / 1000;
 }
 
 void printData(){
+  // below values have been specified to 0.6 because I found them to min and max values(the values fluctuated between this range) when sensor was left stationary
+  float low = -0.6;
+  float high = 0.6;
+
   Serial.print("Gyro (deg)");
   Serial.print(" X=");
-  Serial.print(rotX);
+
+  if((rotX>low)&&(rotX<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotX);
+  }
+
   Serial.print(" Y=");
-  Serial.print(rotY);
+  if((rotY>low)&&(rotY<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotY);
+  }
+
   Serial.print(" Z=");
-  Serial.println(rotZ);
+  if((rotZ>low)&&(rotZ<high)){
+  Serial.print("0.00");
+  } else{
+    Serial.print(rotZ);
+  }
 }
+
 
 ```
